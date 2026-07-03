@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "FocusFlow",
+    "slug": "focusflow",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.focusflow.app"
+    },
+    "android": {
+      "package": "com.focusflow.app"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-notifications",
+      "@react-native-community/datetimepicker"
+    ]
+  }
+}
