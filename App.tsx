@@ -10,6 +10,8 @@ import { useAuthStore } from './src/store/authStore';
 import { colors } from './src/constants/colors';
 import { registerClearUser } from './src/api/client';
 
+import { useFonts } from 'expo-font';
+import { Ionicons } from '@expo/vector-icons';
 import { usePreferencesStore } from './src/store/preferencesStore';
 
 const queryClient = new QueryClient();
@@ -19,6 +21,10 @@ export default function App() {
   const isHydrated = useAuthStore((state) => state.isHydrated);
   const loadPreferences = usePreferencesStore((state) => state.loadPreferences);
 
+  const [fontsLoaded] = useFonts({
+    ...Ionicons.font,
+  });
+
   useEffect(() => {
     hydrate();
     loadPreferences();
@@ -26,7 +32,7 @@ export default function App() {
     registerClearUser(() => useAuthStore.setState({ user: undefined }));
   }, [hydrate, loadPreferences]);
 
-  if (!isHydrated) {
+  if (!isHydrated || !fontsLoaded) {
     return (
       <SafeAreaProvider>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>

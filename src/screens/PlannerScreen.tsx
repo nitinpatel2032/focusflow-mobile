@@ -127,11 +127,22 @@ export function PlannerScreen() {
   };
 
   // Safe date parser to avoid timezone shift
-  const parseDate = (dateStr: string) => {
+  const parseDate = (dateStr: any) => {
     if (!dateStr) return new Date();
-    // Use a regex to avoid timezone issues with `new Date('YYYY-MM-DD')`
-    // This forces the date to be interpreted in the local timezone, not UTC.
-    const date = new Date(dateStr.replace(/-/g, '/'));
+    let str: string;
+    if (typeof dateStr === 'string') {
+      str = dateStr;
+    } else if (dateStr instanceof Date) {
+      str = dateStr.toISOString();
+    } else {
+      str = String(dateStr);
+    }
+    const onlyDateStr = str.split('T')[0] || '';
+    const date = new Date(onlyDateStr.replace(/-/g, '/'));
+    if (isNaN(date.getTime())) {
+      // Fallback in case of parsing issues
+      return new Date(dateStr);
+    }
     date.setHours(0, 0, 0, 0);
     return date;
   };
@@ -139,6 +150,7 @@ export function PlannerScreen() {
   // Helper to format YYYY-MM-DD string to readable format
   const formatDateString = (dateStr: string) => {
     const d = parseDate(dateStr);
+    if (isNaN(d.getTime())) return 'Select Date';
     return d.toLocaleDateString(undefined, {
       weekday: 'short',
       month: 'short',
@@ -149,7 +161,7 @@ export function PlannerScreen() {
 
   // Helper for relative time countdown
   const getRelativeDaysText = (dateStr: string) => {
-    const examDateObj = new Date(dateStr);
+    const examDateObj = parseDate(dateStr);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     examDateObj.setHours(0, 0, 0, 0);
