@@ -10,6 +10,8 @@ import { useAuthStore } from './src/store/authStore';
 import { colors } from './src/constants/colors';
 import { registerClearUser } from './src/api/client';
 
+import { useFonts } from 'expo-font';
+import { Ionicons } from '@expo/vector-icons';
 import { usePreferencesStore } from './src/store/preferencesStore';
 
 const queryClient = new QueryClient();
@@ -18,6 +20,10 @@ export default function App() {
   const hydrate = useAuthStore((state) => state.hydrate);
   const isHydrated = useAuthStore((state) => state.isHydrated);
   const loadPreferences = usePreferencesStore((state) => state.loadPreferences);
+
+  const [fontsLoaded] = useFonts({
+    ...Ionicons.font,
+  });
 
   useEffect(() => {
     hydrate();
