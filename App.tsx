@@ -21,7 +21,7 @@ export default function App() {
   const isHydrated = useAuthStore((state) => state.isHydrated);
   const loadPreferences = usePreferencesStore((state) => state.loadPreferences);
 
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     ...Ionicons.font,
   });
 
@@ -32,7 +32,7 @@ export default function App() {
     registerClearUser(() => useAuthStore.setState({ user: undefined }));
   }, [hydrate, loadPreferences]);
 
-  if (!isHydrated) {
+  if (!isHydrated || (!fontsLoaded && !fontError)) {
     return (
       <SafeAreaProvider>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
