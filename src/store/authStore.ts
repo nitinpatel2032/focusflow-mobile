@@ -19,10 +19,19 @@ export const useAuthStore = create<AuthState>((set) => ({
   isHydrated: false,
   hydrate: async () => {
     try {
-      const [tokens, cachedUser] = await Promise.all([
+      // Safety timeout: if native storage calls hang, fallback after 1.5s to let the app start
+      const storagePromise = Promise.all([
         getTokens(),
         getUserProfile()
       ]);
+      
+      const timeoutPromise = new Promise<[{ accessToken: string | null; refreshToken: string | null }, any]>((resolve) => {
+        setTimeout(() => {
+          resolve([{ accessToken: null, refreshToken: null }, null]);
+        }, 1500);
+      });
+
+      const [tokens, cachedUser] = await Promise.race([storagePromise, timeoutPromise]);
       
       setAccessToken(tokens.accessToken ?? undefined);
       
@@ -34,36 +43,30 @@ export const useAuthStore = create<AuthState>((set) => ({
       // If we have a cached user profile, immediately hydrate the UI so the app mounts
       if (cachedUser) {
         set({ user: cachedUser, isHydrated: true });
-        
-        // Fetch fresh profile in the background to verify/update
-        authApi.me()
-          .then((user) => {
-            set({ user });
-            saveUserProfile(user).catch(() => undefined);
-          })
-          .catch(async (error) => {
-            if (error.response?.status === 401) {
-              await clearTokens();
-              await clearUserProfile();
-              setAccessToken(undefined);
-              set({ user: undefined });
-            }
-          });
       } else {
-        // No cached profile - fallback to fetching before completing hydration
-        try {
-          const user = await authApi.me();
-          await saveUserProfile(user);
-          set({ user, isHydrated: true });
-        } catch (error: any) {
+        // If we have tokens but no cached user (e.g., first run of this version),
+        // we set isHydrated: true with a dummy/partial user to bypass the login check
+        // and avoid blocking on the network call. The background fetch will update it.
+        set({ 
+          user: { id: 'temp', name: 'User', email: '' } as any, 
+          isHydrated: true 
+        });
+      }
+      
+      // Perform background profile check (completely non-blocking)
+      authApi.me()
+        .then((user) => {
+          set({ user });
+          saveUserProfile(user).catch(() => undefined);
+        })
+        .catch(async (error) => {
           if (error.response?.status === 401) {
             await clearTokens();
             await clearUserProfile();
             setAccessToken(undefined);
+            set({ user: undefined });
           }
-          set({ isHydrated: true });
-        }
-      }
+        });
     } catch {
       set({ isHydrated: true });
     }
