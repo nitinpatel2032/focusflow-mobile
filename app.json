@@ -24,12 +24,19 @@
     "plugins": [
       "expo-secure-store",
       "expo-notifications",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-font",
+        {
+          "fonts": ["./assets/fonts/ionicons.ttf"]
+        }
+      ]
     ],
     "extra": {
       "eas": {
-        "projectId": "ada176a7-9602-416c-ac2e-14d5b31fda17"
+        "projectId": "40e2d8e9-3cf6-4b3f-a111-f9508b9ad84c"
       }
-    }
+    },
+    "owner": "nitin_patel"
   }
 }
